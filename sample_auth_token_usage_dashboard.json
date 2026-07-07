@@ -1,0 +1,344 @@
+{
+  "title": "Sample Auth API — Token Usage Investigation",
+  "description": "Examines who is still using the Sample Auth API (sample_auth_api) across all environments. Tracks token issuance, validation, caller hosts, client IPs, user-agents, latency, and errors.",
+  "layout_type": "ordered",
+  "is_read_only": false,
+  "template_variables": [
+    {
+      "name": "env",
+      "prefix": "env",
+      "default": "*",
+      "available_values": []
+    }
+  ],
+  "widgets": [
+    {
+      "definition": {
+        "type": "note",
+        "content": "## Sample Auth API — Token Usage\n\nService: **sample_auth_api** &nbsp;|&nbsp; Endpoints: `/identity/connect/token`, `/identity/connect/accesstokenvalidation`\n\n| Env | Hostname | Hosts |\n|---|---|---|\n| Production | auth.example.com | PROD-HOST* |\n| Stage | stage-auth.example.com | STAGE-HOST* |\n| QA | qa-auth.example.com | QA-HOST* |\n| Development | dev-auth.example.com | DEV-HOST* |",
+        "background_color": "vivid_blue",
+        "font_size": "14",
+        "text_align": "left",
+        "show_tick": false
+      },
+      "layout": { "x": 0, "y": 0, "width": 12, "height": 2 }
+    },
+    {
+      "definition": {
+        "type": "query_value",
+        "title": "Production — Token Requests",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,env:production}.as_count()",
+            "aggregator": "sum"
+          }
+        ],
+        "precision": 0
+      },
+      "layout": { "x": 0, "y": 2, "width": 3, "height": 2 }
+    },
+    {
+      "definition": {
+        "type": "query_value",
+        "title": "Stage — Token Requests",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,env:stage}.as_count()",
+            "aggregator": "sum"
+          }
+        ],
+        "precision": 0
+      },
+      "layout": { "x": 3, "y": 2, "width": 3, "height": 2 }
+    },
+    {
+      "definition": {
+        "type": "query_value",
+        "title": "QA — Token Requests",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,env:qa}.as_count()",
+            "aggregator": "sum"
+          }
+        ],
+        "precision": 0
+      },
+      "layout": { "x": 6, "y": 2, "width": 3, "height": 2 }
+    },
+    {
+      "definition": {
+        "type": "query_value",
+        "title": "Development — Token Requests",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,env:development}.as_count()",
+            "aggregator": "sum"
+          }
+        ],
+        "precision": 0
+      },
+      "layout": { "x": 9, "y": 2, "width": 3, "height": 2 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Token Issuance Requests — All Environments",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,$env} by {env}.as_count()",
+            "display_type": "bars",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 4, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Token Validation Requests — All Environments",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/accesstokenvalidation*,service:sample_auth_api,$env} by {env}.as_count()",
+            "display_type": "bars",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 4, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "toplist",
+        "title": "Top Hosts Serving Token Requests",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "top(sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,$env} by {host}.as_count(), 20, 'sum', 'desc')"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 7, "width": 6, "height": 4 }
+    },
+    {
+      "definition": {
+        "type": "toplist",
+        "title": "Top Client IPs — Token Endpoint",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "top(sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,$env} by {http.client_ip}.as_count(), 20, 'sum', 'desc')"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 7, "width": 6, "height": 4 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Production — Token Requests by Host",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,env:production} by {host}.as_count()",
+            "display_type": "bars",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 11, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Stage — Token Requests by Host",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,env:stage} by {host}.as_count()",
+            "display_type": "bars",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 11, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "QA — Token Requests by Host",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,env:qa} by {host}.as_count()",
+            "display_type": "bars",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 14, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Development — Token Requests by Host",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,env:development} by {host}.as_count()",
+            "display_type": "bars",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 14, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Token Endpoint Errors by Environment",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:trace.aspnet.request.errors{resource_name:post_/identity/connect/token*,service:sample_auth_api,$env} by {env}.as_count()",
+            "display_type": "bars",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 17, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "Token Endpoint Avg Latency by Environment",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "avg:trace.aspnet.request.duration{resource_name:post_/identity/connect/token*,service:sample_auth_api,$env} by {env}",
+            "display_type": "line",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 17, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "toplist",
+        "title": "Token Requests by HTTP Status Code",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "top(sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,$env} by {http.status_code}.as_count(), 10, 'sum', 'desc')"
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 20, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "toplist",
+        "title": "Token Requests by User-Agent",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "top(sum:trace.aspnet.request.hits{resource_name:post_/identity/connect/token*,service:sample_auth_api,$env} by {http.useragent}.as_count(), 20, 'sum', 'desc')"
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 20, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "note",
+        "content": "## ALB / Infrastructure Metrics\nAWS ALB request counts for sample authentication service production load balancers.",
+        "background_color": "gray",
+        "font_size": "14",
+        "text_align": "left",
+        "show_tick": false
+      },
+      "layout": { "x": 0, "y": 23, "width": 12, "height": 1 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "ALB Request Count — Prod Portal ALB",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:aws.applicationelb.request_count{name:ue1pporapp-alb-prod}.as_count()",
+            "display_type": "bars",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 0, "y": 24, "width": 6, "height": 3 }
+    },
+    {
+      "definition": {
+        "type": "timeseries",
+        "title": "ALB 4xx / 5xx Errors — Prod Portal ALB",
+        "title_size": "16",
+        "title_align": "left",
+        "time": { "live_span": "4h" },
+        "requests": [
+          {
+            "q": "sum:aws.applicationelb.httpcode_elb_4xx{name:ue1pporapp-alb-prod}.as_count()",
+            "display_type": "line",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          },
+          {
+            "q": "sum:aws.applicationelb.httpcode_elb_5xx{name:ue1pporapp-alb-prod}.as_count()",
+            "display_type": "line",
+            "style": { "line_type": "solid", "line_width": "normal" }
+          }
+        ]
+      },
+      "layout": { "x": 6, "y": 24, "width": 6, "height": 3 }
+    }
+  ]
+}
+
+
+

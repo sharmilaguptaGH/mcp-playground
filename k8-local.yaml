@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-platform-automation-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-platform-automation-server
+  template:
+    metadata:
+      labels:
+        app: mcp-platform-automation-server
+    spec:
+      containers:
+        - name: mcp-platform-automation-server
+          image: mcp-platform-automation-server:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: MCP_TRANSPORT
+              value: "sse"
+            - name: MCP_HOST
+              value: "0.0.0.0"
+            - name: MCP_PORT
+              value: "8000"
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-platform-automation-server-nodeport
+spec:
+  selector:
+    app: mcp-platform-automation-server
+  type: NodePort
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      nodePort: 30080
